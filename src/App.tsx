@@ -188,11 +188,73 @@ export default function App() {
     );
   }
 
-  // Active unit calculation if on pages 2..21
-  const currentUnitIndex = activePage >= 2 && activePage <= 21 ? activePage - 2 : null;
-  const currentUnit = currentUnitIndex !== null ? UNITS_DATA[currentUnitIndex] : null;
-  const currentUnitLog =
-    currentUnit !== null ? portfolio.units[currentUnit.id] : null;
+  const renderBookPage = (page: number) => {
+    if (page === 0) {
+      return (
+        <BookCover
+          student={portfolio.student}
+          onUpdateStudent={handleUpdateStudent}
+          onOpenBook={() => handleNavigate(2)}
+          onViewToc={() => handleNavigate(1)}
+          onNewStudent={handleNewStudent}
+          onOpenGoogleSheets={() => setIsGoogleSheetsOpen(true)}
+          completedCount={completedCount}
+        />
+      );
+    }
+
+    if (page === 1) {
+      return (
+        <TableOfContents
+          portfolio={portfolio}
+          onNavigateToUnit={(unitId) => handleNavigate(unitId + 1)}
+          onNavigateToCover={() => handleNavigate(0)}
+          onNavigateToEpilogue={() => handleNavigate(22)}
+        />
+      );
+    }
+
+    if (page >= 2 && page <= 21) {
+      const unit = UNITS_DATA[page - 2];
+      const log = portfolio.units[unit.id];
+      if (!log) return null;
+      return (
+        <UnitPage
+          key={unit.id}
+          unit={unit}
+          log={log}
+          student={portfolio.student}
+          onUpdateLog={(updated) => handleUpdateLog(unit.id, updated)}
+          onPrevUnit={() => handleNavigate(Math.max(1, page - 1))}
+          onNextUnit={() => handleNavigate(Math.min(22, page + 1))}
+          onPrintThisPage={() => {
+            setActivePage(page);
+            setPrintMode('single');
+          }}
+          onOpenGoogleSheetsModal={() => setIsGoogleSheetsOpen(true)}
+          isFirstUnit={unit.id === 1}
+          isLastUnit={unit.id === 20}
+          googleSheetsWebhookUrl={portfolio.googleSheetsWebhookUrl}
+        />
+      );
+    }
+
+    return (
+      <EpiloguePage
+        portfolio={portfolio}
+        student={portfolio.student}
+        onUpdateSummary={handleUpdateSummary}
+        onPrintAll={() => setPrintMode('all')}
+        onExportTxt={() => exportPortfolioAsTxt(portfolio)}
+        onExportJson={() => exportPortfolioAsJSON(portfolio)}
+        onDownloadZip={downloadProjectZip}
+        onNavigateToCover={() => handleNavigate(0)}
+      />
+    );
+  };
+
+  const leftPage = activePage === 0 ? null : activePage % 2 === 1 ? activePage : activePage - 1;
+  const rightPage = activePage === 0 ? 0 : leftPage !== null && leftPage + 1 <= 22 ? leftPage + 1 : null;
 
   return (
     <div className="min-h-screen bg-stone-200/90 text-stone-900 flex flex-col selection:bg-amber-100 selection:text-amber-900 pb-20">
@@ -213,96 +275,39 @@ export default function App() {
         saveStatus={saveStatus}
       />
 
-      {/* Main flipbook canvas: every destination uses the same directional page turn. */}
-      <main className="flex-1 overflow-hidden book-stage">
-        <AnimatePresence mode="wait" custom={pageDirection} initial={false}>
-          <motion.div
-            key={activePage}
-            custom={pageDirection}
-            variants={{
-              enter: (direction: number) => ({
-                opacity: 0.25,
-                rotateY: direction > 0 ? -82 : 82,
-                x: direction > 0 ? '12%' : '-12%',
-                scale: 0.985,
-                transformOrigin: direction > 0 ? 'left center' : 'right center',
-                filter: 'brightness(0.72)',
-              }),
-              center: {
-                opacity: 1,
-                rotateY: 0,
-                x: 0,
-                scale: 1,
-                filter: 'brightness(1)',
-              },
-              exit: (direction: number) => ({
-                opacity: 0.15,
-                rotateY: direction > 0 ? 82 : -82,
-                x: direction > 0 ? '-12%' : '12%',
-                scale: 0.985,
-                transformOrigin: direction > 0 ? 'left center' : 'right center',
-                filter: 'brightness(0.68)',
-              }),
-            }}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.62, ease: [0.22, 0.72, 0.18, 1] }}
-            className="book-turn-page"
-          >
-            <span className="page-turn-sheen" aria-hidden="true" />
-            {activePage === 0 && (
-              <BookCover
-                student={portfolio.student}
-                onUpdateStudent={handleUpdateStudent}
-                onOpenBook={() => handleNavigate(2)} // Jump to Unit 01
-                onViewToc={() => handleNavigate(1)}  // Jump to TOC
-                onNewStudent={handleNewStudent}
-                onOpenGoogleSheets={() => setIsGoogleSheetsOpen(true)}
-                completedCount={completedCount}
-              />
-            )}
+      {/* Desktop opens as a true two-page spread; mobile keeps one readable leaf. */}
+      <main className="flex-1 book-stage px-0 lg:px-4 py-0 lg:py-7">
+        <div className={`open-book ${activePage === 0 ? 'is-cover' : ''}`}>
+          {leftPage !== null && (
+            <section className={`book-face book-face-left ${activePage === leftPage ? 'is-active-page' : ''}`} aria-label={`${leftPage}쪽`}>
+              {renderBookPage(leftPage)}
+            </section>
+          )}
+          {rightPage !== null && (
+            <section className={`book-face book-face-right ${activePage === rightPage ? 'is-active-page' : ''}`} aria-label={`${rightPage}쪽`}>
+              {renderBookPage(rightPage)}
+            </section>
+          )}
 
-            {activePage === 1 && (
-              <TableOfContents
-                portfolio={portfolio}
-                onNavigateToUnit={(unitId) => handleNavigate(unitId + 1)}
-                onNavigateToCover={() => handleNavigate(0)}
-                onNavigateToEpilogue={() => handleNavigate(22)}
-              />
-            )}
-
-            {activePage >= 2 && activePage <= 21 && currentUnit && currentUnitLog && (
-              <UnitPage
-                key={currentUnit.id}
-                unit={currentUnit}
-                log={currentUnitLog}
-                student={portfolio.student}
-                onUpdateLog={(updated) => handleUpdateLog(currentUnit.id, updated)}
-                onPrevUnit={() => handleNavigate(Math.max(1, activePage - 1))}
-                onNextUnit={() => handleNavigate(Math.min(22, activePage + 1))}
-                onPrintThisPage={() => setPrintMode('single')}
-                onOpenGoogleSheetsModal={() => setIsGoogleSheetsOpen(true)}
-                isFirstUnit={currentUnit.id === 1}
-                isLastUnit={currentUnit.id === 20}
-                googleSheetsWebhookUrl={portfolio.googleSheetsWebhookUrl}
-              />
-            )}
-
-            {activePage === 22 && (
-              <EpiloguePage
-                portfolio={portfolio}
-                student={portfolio.student}
-                onUpdateSummary={handleUpdateSummary}
-                onPrintAll={() => setPrintMode('all')}
-                onExportTxt={() => exportPortfolioAsTxt(portfolio)}
-                onExportJson={() => exportPortfolioAsJSON(portfolio)}
-                onDownloadZip={downloadProjectZip}
-                onNavigateToCover={() => handleNavigate(0)}
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
+          <AnimatePresence custom={pageDirection} initial={false}>
+            <motion.div
+              key={activePage}
+              custom={pageDirection}
+              className={`turning-leaf ${pageDirection > 0 ? 'turning-forward' : 'turning-backward'}`}
+              initial={{ rotateY: 0, filter: 'brightness(1)' }}
+              animate={{
+                rotateY: pageDirection > 0 ? -180 : 180,
+                filter: ['brightness(1)', 'brightness(0.7)', 'brightness(1)'],
+              }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.05, ease: [0.3, 0.02, 0.18, 1] }}
+              aria-hidden="true"
+            >
+              <span className="turning-leaf-paper" />
+            </motion.div>
+          </AnimatePresence>
+          <span className="book-gutter" aria-hidden="true" />
+        </div>
       </main>
 
       {/* Bottom Floating Page Navigator */}
