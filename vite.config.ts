@@ -5,6 +5,9 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+  base: process.env.GITHUB_PAGES === 'true' ? '/bst-bc/' : '/',
+  plugins: [react(), tailwindcss()],
+
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
