@@ -203,6 +203,7 @@ export const UnitPage: React.FC<UnitPageProps> = ({
   const hasWrittenProcedure = (log.procedureNotes || '').trim().length > 0;
   const showLeftPage = spreadSide !== 'right';
   const showRightPage = spreadSide !== 'left';
+  const useLeftForSelfEvaluation = unit.id <= 13 || [14, 16, 17, 19].includes(unit.id);
 
   return (
     <div className="max-w-5xl mx-auto p-4 sm:p-8">
@@ -214,6 +215,13 @@ export const UnitPage: React.FC<UnitPageProps> = ({
           className="p-6 sm:p-8 border-b border-stone-200 transition-colors"
           style={{ backgroundColor: unit.softHex }}
         >
+          {showRightPage && (
+            <div className="flex items-center justify-end gap-2 flex-wrap mb-5">
+              <button type="button" onClick={handleDirectSheetSend} disabled={isSyncingSheet} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-xs"><FileSpreadsheet className="w-3.5 h-3.5" /><span>{sheetSyncSuccess ? '시트 전송 완료!' : isSyncingSheet ? '전송 중…' : '구글 시트 전송'}</span></button>
+              <button type="button" onClick={handleToggleComplete} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-xs ${log.isCompleted ? 'bg-teal-700 text-white hover:bg-teal-800' : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-300'}`}>{log.isCompleted ? <><CheckCircle2 className="w-3.5 h-3.5 text-teal-200" /><span>실습 완료 도장</span></> : <><Circle className="w-3.5 h-3.5 text-stone-400" /><span>완료 체크</span></>}</button>
+              <button type="button" onClick={onPrintThisPage} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-white text-stone-700 border border-stone-300 hover:bg-stone-100 transition-colors"><Printer className="w-3.5 h-3.5" /><span>단원 A4 인쇄</span></button>
+            </div>
+          )}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-3 min-w-0">
               <span
@@ -223,18 +231,17 @@ export const UnitPage: React.FC<UnitPageProps> = ({
                 {unit.icon}
               </span>
               <div className="min-w-0">
-                <span className="text-xs font-mono font-bold tracking-wider text-stone-500 uppercase block truncate">
+                <span className="text-xs font-mono font-bold tracking-wider text-stone-500 uppercase block whitespace-normal leading-relaxed">
                   {unit.moduleGroup} · UNIT {unit.code}
                 </span>
-                {/* 🌟 단원과 단원명이 항상 한 줄로 깔끔하게 표시됨 */}
-                <h1 className="font-serif-kr text-xl sm:text-2xl md:text-3xl font-black text-stone-900 tracking-tight whitespace-nowrap">
+                <h1 className="font-serif-kr text-xl sm:text-2xl md:text-3xl font-black text-stone-900 tracking-tight leading-tight">
                   {unit.code}단원 · {unit.title}
                 </h1>
               </div>
             </div>
 
-            {/* Quick Actions in Header */}
-            <div className="flex items-center gap-2 flex-wrap shrink-0">
+            {/* Quick actions live only at the very top of the right-hand page. */}
+            {false && <div className="flex items-center gap-2 flex-wrap shrink-0">
               <button
                 type="button"
                 onClick={handleDirectSheetSend}
@@ -283,7 +290,7 @@ export const UnitPage: React.FC<UnitPageProps> = ({
                 <Printer className="w-3.5 h-3.5" />
                 <span>단원 A4 인쇄</span>
               </button>
-            </div>
+            </div>}
           </div>
 
           {/* Student info and learning goal belong to the first page of the spread. */}
@@ -714,7 +721,7 @@ export const UnitPage: React.FC<UnitPageProps> = ({
           )}
 
           {/* Section 3: 학생 자기평가 */}
-          {((showLeftPage && unit.id <= 13) || (showRightPage && unit.id >= 14)) && (
+          {((showLeftPage && useLeftForSelfEvaluation) || (showRightPage && !useLeftForSelfEvaluation)) && (
           <section className="space-y-3">
             <h2 className="font-serif-kr text-base sm:text-lg font-bold text-stone-900">
               ③ 학생 자기평가 &amp; 성찰 기록

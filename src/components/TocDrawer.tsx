@@ -70,9 +70,10 @@ export const TocDrawer: React.FC<TocDrawerProps> = ({
                   : 'text-stone-300 hover:bg-stone-800'
               }`}
             >
-              <span>01. 전체 목차 &amp; 로드맵</span>
-              <span className="text-[10px] opacity-70">TOC</span>
+              <span>01. 속표지 · 인적사항과 다짐</span>
+              <span className="text-[10px] opacity-70">Intro</span>
             </button>
+            <button onClick={() => { onSelectPage(2); onClose(); }} className={`w-full text-left px-3 py-2.5 rounded-lg font-medium flex items-center justify-between transition-colors ${activePage === 2 ? 'bg-amber-400 text-stone-950 font-bold' : 'text-stone-300 hover:bg-stone-800'}`}><span>02. 전체 목차 &amp; 로드맵</span><span className="text-[10px] opacity-70">TOC</span></button>
           </div>
 
           <p className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2 px-1">
@@ -82,7 +83,7 @@ export const TocDrawer: React.FC<TocDrawerProps> = ({
           {/* 20 Units List */}
           <div className="space-y-1 text-xs">
             {UNITS_DATA.map((unit, idx) => {
-              const pageIndex = idx + 2;
+              const pageIndex = idx + 3;
               const log = portfolio.units[unit.id];
               const isDone = log?.isCompleted;
               const isCurrent = activePage === pageIndex;
@@ -128,16 +129,16 @@ export const TocDrawer: React.FC<TocDrawerProps> = ({
           <div className="mt-4 pt-4 border-t border-stone-800">
             <button
               onClick={() => {
-                onSelectPage(22);
+                onSelectPage(23);
                 onClose();
               }}
               className={`w-full text-left px-3 py-2.5 rounded-lg font-medium flex items-center justify-between text-xs transition-colors ${
-                activePage === 22
+                activePage === 23
                   ? 'bg-amber-400 text-stone-950 font-bold'
                   : 'text-stone-300 hover:bg-stone-800'
               }`}
             >
-              <span>22. 포트폴리오 총평 및 수료</span>
+              <span>23. 포트폴리오 총평 및 뒷표지</span>
               <span className="text-[10px] opacity-70">Epilogue</span>
             </button>
           </div>

@@ -42,13 +42,14 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
   }, [activePage, totalPages, onNavigate]);
 
   const getPageTitle = (page: number): string => {
-    if (page === 0) return '표지 · B-디저트 실무';
-    if (page === 1) return '목차 · 전체 20단원 인덱스';
-    if (page >= 2 && page <= 21) {
-      const u = UNITS_DATA[page - 2];
+    if (page === 0) return '앞표지 · B-디저트 실무';
+    if (page === 1) return '속표지 · 나의 파티시에 다짐';
+    if (page === 2) return '목차 · 전체 20단원 인덱스';
+    if (page >= 3 && page <= 22) {
+      const u = UNITS_DATA[page - 3];
       return `${u.code}단원 · ${u.title}`;
     }
-    if (page === 22) return '총평 · 종합 수료 평가';
+    if (page === 23) return '총평 · 책의 마지막 장';
     return `페이지 ${page}`;
   };
 
@@ -78,14 +79,15 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
           onChange={(e) => onNavigate(Number(e.target.value))}
           className="bg-stone-800 text-stone-200 border border-stone-700 rounded-lg px-2.5 py-1 text-xs focus:outline-none focus:border-amber-400 font-medium cursor-pointer"
         >
-          <option value={0}>00. 표지 (B-디저트 실무)</option>
-          <option value={1}>01. 전체 목차 (20단원 인덱스)</option>
+          <option value={0}>00. 앞표지</option>
+          <option value={1}>01. 속표지 · 인적사항과 다짐</option>
+          <option value={2}>02. 전체 목차 (20단원 인덱스)</option>
           {UNITS_DATA.map((u, idx) => (
-            <option key={u.id} value={idx + 2}>
-              {String(idx + 2).padStart(2, '0')}. {u.code}단원 {u.title}
+            <option key={u.id} value={idx + 3}>
+              {String(idx + 3).padStart(2, '0')}. {u.code}단원 {u.title}
             </option>
           ))}
-          <option value={22}>22. 포트폴리오 총평 및 수료</option>
+          <option value={23}>23. 포트폴리오 총평 및 뒷표지</option>
         </select>
 
         <span className="text-stone-400 font-mono hidden md:inline">

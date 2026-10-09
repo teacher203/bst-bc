@@ -8,6 +8,7 @@ interface TableOfContentsProps {
   onNavigateToUnit: (unitId: number) => void;
   onNavigateToCover: () => void;
   onNavigateToEpilogue: () => void;
+  spreadSide?: 'left' | 'right' | 'full';
 }
 
 export const TableOfContents: React.FC<TableOfContentsProps> = ({
@@ -15,6 +16,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
   onNavigateToUnit,
   onNavigateToCover,
   onNavigateToEpilogue,
+  spreadSide = 'full',
 }) => {
   const completedCount = Object.values(portfolio.units).filter((u) => u.isCompleted).length;
   const progressPercent = Math.round((completedCount / UNITS_DATA.length) * 100);
@@ -24,6 +26,12 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
   const avgScore = gradedUnits.length > 0
     ? Math.round(gradedUnits.reduce((acc, u) => acc + (u.coachScore || 0), 0) / gradedUnits.length)
     : null;
+  const visibleUnitIds = spreadSide === 'left'
+    ? UNITS_DATA.filter((unit) => unit.id <= 10).map((unit) => unit.id)
+    : spreadSide === 'right'
+    ? UNITS_DATA.filter((unit) => unit.id >= 11).map((unit) => unit.id)
+    : UNITS_DATA.map((unit) => unit.id);
+  const pageRange = spreadSide === 'left' ? '01–10단원' : spreadSide === 'right' ? '11–20단원' : '20단원';
 
   return (
     <div className="max-w-5xl mx-auto p-4 sm:p-8">
@@ -32,10 +40,10 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-stone-200 pb-6 mb-6">
           <div>
             <span className="text-xs font-semibold text-amber-700 tracking-wider uppercase block mb-1">
-              PORTFOLIO CONTENTS · 20 UNITS
+              PORTFOLIO CONTENTS · {pageRange}
             </span>
             <h2 className="font-serif-kr text-2xl sm:text-3xl font-bold text-stone-900">
-              실습일지 전체 목차
+              실습일지 목차 · {pageRange}
             </h2>
             <p className="text-stone-600 text-sm mt-1">
               단원 번호를 클릭하면 해당 실습 페이지로 바로 책장을 넘깁니다.
@@ -43,6 +51,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
           </div>
 
           {/* Stats Bar */}
+          {spreadSide !== 'right' && (
           <div className="flex items-center gap-6 text-xs text-stone-600 bg-stone-50 px-4 py-2.5 rounded-xl border border-stone-200">
             <div>
               <span className="text-stone-400 block">완료 단원</span>
@@ -63,10 +72,11 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
               </>
             )}
           </div>
+          )}
         </div>
 
         {/* Progress Bar */}
-        <div className="mb-8">
+        {spreadSide !== 'right' && <div className="mb-8">
           <div className="flex justify-between text-xs text-stone-500 mb-1.5">
             <span>20단원 포트폴리오 진행 상황</span>
             <span className="font-semibold text-stone-700">{completedCount} / 20단원 완료</span>
@@ -77,22 +87,25 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
               style={{ width: `${progressPercent}%` }}
             />
           </div>
-        </div>
+        </div>}
 
         {/* Modules Accordion / Groups */}
         <div className="space-y-8">
-          {MODULE_GROUPS.map((mod, modIdx) => (
+          {MODULE_GROUPS.map((mod, modIdx) => {
+            const pageUnits = mod.units.filter((unitId) => visibleUnitIds.includes(unitId));
+            if (pageUnits.length === 0) return null;
+            return (
             <div key={modIdx} className="space-y-3">
               <h3 className="font-serif-kr text-sm sm:text-base font-bold text-stone-800 flex items-center gap-2 pb-1 border-b border-stone-200">
                 <span className="w-2 h-2 rounded-full bg-amber-600" />
                 <span>{mod.name}</span>
                 <span className="text-xs text-stone-400 font-normal ml-auto">
-                  {mod.units.length}개 단원
+                  {pageUnits.length}개 단원
                 </span>
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {mod.units.map((unitId) => {
+              <div className="grid grid-cols-1 gap-3">
+                {pageUnits.map((unitId) => {
                   const unit = UNITS_DATA.find((u) => u.id === unitId);
                   if (!unit) return null;
                   const log = portfolio.units[unitId];
@@ -118,11 +131,11 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
                         </div>
 
                         <div className="min-w-0">
-                          <h4 className="text-sm font-bold text-stone-900 truncate group-hover:text-amber-800 transition-colors whitespace-nowrap">
+                          <h4 className="text-sm font-bold text-stone-900 group-hover:text-amber-800 transition-colors leading-snug">
                             <span className="font-mono text-stone-500 mr-1.5">{unit.code}단원 ·</span>
                             {unit.title}
                           </h4>
-                          <p className="text-xs text-stone-500 truncate mt-0.5">
+                          <p className="text-xs text-stone-500 mt-1 leading-relaxed">
                             {unit.goal}
                           </p>
                         </div>
@@ -164,23 +177,28 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
                 })}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Footer Jump buttons */}
         <div className="mt-8 pt-6 border-t border-stone-200 flex flex-wrap items-center justify-between gap-4 text-xs">
+          {spreadSide !== 'right' && (
           <button
             onClick={onNavigateToCover}
             className="text-stone-600 hover:text-stone-900 font-medium flex items-center gap-1 py-1 px-2.5 rounded bg-stone-100 hover:bg-stone-200 transition-colors"
           >
             ← 앞표지(Cover)로 돌아가기
           </button>
+          )}
+          {spreadSide !== 'left' && (
           <button
             onClick={onNavigateToEpilogue}
             className="text-amber-800 hover:text-amber-900 font-semibold flex items-center gap-1 py-1 px-3 rounded bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors"
           >
             포트폴리오 총평 및 수료 페이지로 이동 →
           </button>
+          )}
         </div>
       </div>
     </div>

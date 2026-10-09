@@ -11,6 +11,7 @@ interface BookCoverProps {
   onNewStudent: () => void;
   onOpenGoogleSheets: () => void;
   completedCount: number;
+  spreadSide?: 'left' | 'right' | 'full';
 }
 
 const MOTTO_EXAMPLE = '식재료의 본질과 정밀한 제과 테크닉으로 완성하는 나만의 디저트 포트폴리오';
@@ -23,6 +24,7 @@ export const BookCover: React.FC<BookCoverProps> = ({
   onNewStudent,
   onOpenGoogleSheets,
   completedCount,
+  spreadSide = 'full',
 }) => {
   const [isDetailEditing, setIsDetailEditing] = useState(false);
   const [isThemePickerOpen, setIsThemePickerOpen] = useState(false);
@@ -30,6 +32,8 @@ export const BookCover: React.FC<BookCoverProps> = ({
 
   // Active theme based on student ID, name, or explicit theme
   const currentTheme = getStudentCoverTheme(student.studentNo, student.studentName, student.coverThemeId);
+  const showImagePage = spreadSide !== 'right';
+  const showInfoPage = spreadSide !== 'left';
 
   const handleSaveDetail = () => {
     onUpdateStudent({
@@ -69,7 +73,8 @@ export const BookCover: React.FC<BookCoverProps> = ({
       <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-stone-300 book-spine-shadow flex flex-col md:flex-row transition-all duration-300">
         
         {/* Book Left/Spine Visual Banner with Selected Theme Gradient */}
-        <div className={`md:w-5/12 bg-gradient-to-br ${currentTheme.bgGradient} text-white p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden`}>
+        {showImagePage && (
+        <div className={`${spreadSide === 'full' ? 'md:w-5/12' : 'w-full'} bg-gradient-to-br ${currentTheme.bgGradient} text-white p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden`}>
           {/* Subtle decorative background pattern */}
           <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
 
@@ -100,7 +105,7 @@ export const BookCover: React.FC<BookCoverProps> = ({
               ) : (
                 <div className="relative w-full h-full">
                   <img
-                    src={`${import.meta.env.BASE_URL}images/cover.jpg`}
+                    src="/images/cover.jpg"
                     alt="B-디저트 실무 책 표지"
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
@@ -156,10 +161,17 @@ export const BookCover: React.FC<BookCoverProps> = ({
               {completedCount} / 20단원 누적
             </span>
           </div>
+          {spreadSide === 'left' && (
+            <button type="button" onClick={onOpenBook} className="relative z-10 mt-5 w-full py-3 rounded-xl border border-amber-200/50 bg-white/10 hover:bg-white/20 text-amber-100 font-bold flex items-center justify-center gap-2 transition-colors">
+              <BookOpen className="w-4 h-4" /> 책 펼치기 <ChevronRight className="w-4 h-4" />
+            </button>
+          )}
         </div>
+        )}
 
         {/* Book Right Side: Editorial Cover Title & Student Info */}
-        <div className="md:w-7/12 p-8 sm:p-12 flex flex-col justify-between bg-stone-50/50 relative">
+        {showInfoPage && (
+        <div className={`${spreadSide === 'full' ? 'md:w-7/12' : 'w-full'} p-8 sm:p-12 flex flex-col justify-between bg-stone-50/50 relative`}>
           <div>
             {/* Top Eyebrow & Quick Student Actions */}
             <div className="flex items-center justify-between gap-2 mb-4">
@@ -412,7 +424,7 @@ export const BookCover: React.FC<BookCoverProps> = ({
             </button>
           </div>
         </div>
-
+        )}
       </div>
     </div>
   );

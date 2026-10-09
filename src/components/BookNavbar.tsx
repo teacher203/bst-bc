@@ -61,17 +61,17 @@ export const BookNavbar: React.FC<BookNavbarProps> = ({
             표지
           </button>
           <button
-            onClick={() => onNavigate(1)}
+            onClick={() => onNavigate(2)}
             className={`transition-colors hover:text-white pb-0.5 ${
-              activePage === 1 ? 'text-amber-400 border-b-2 border-amber-400 font-semibold' : ''
+              activePage === 2 ? 'text-amber-400 border-b-2 border-amber-400 font-semibold' : ''
             }`}
           >
             목차
           </button>
           <button
-            onClick={() => onNavigate(activePage >= 2 && activePage <= 21 ? activePage : 2)}
+            onClick={() => onNavigate(activePage >= 3 && activePage <= 22 ? activePage : 3)}
             className={`transition-colors hover:text-white pb-0.5 ${
-              activePage >= 2 && activePage <= 21
+              activePage >= 3 && activePage <= 22
                 ? 'text-amber-400 border-b-2 border-amber-400 font-semibold'
                 : ''
             }`}
@@ -79,9 +79,9 @@ export const BookNavbar: React.FC<BookNavbarProps> = ({
             실습일지 (20단원)
           </button>
           <button
-            onClick={() => onNavigate(22)}
+            onClick={() => onNavigate(23)}
             className={`transition-colors hover:text-white pb-0.5 ${
-              activePage === 22 ? 'text-amber-400 border-b-2 border-amber-400 font-semibold' : ''
+              activePage === 23 ? 'text-amber-400 border-b-2 border-amber-400 font-semibold' : ''
             }`}
           >
             포트폴리오 총평

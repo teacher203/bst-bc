@@ -10,6 +10,7 @@ import { BookCover } from './components/BookCover';
 import { TableOfContents } from './components/TableOfContents';
 import { UnitPage } from './components/UnitPage';
 import { EpiloguePage } from './components/EpiloguePage';
+import { BackCover } from './components/BackCover';
 import { PageNavigation } from './components/PageNavigation';
 import { TocDrawer } from './components/TocDrawer';
 import { PrintPortfolioView } from './components/PrintPortfolioView';
@@ -32,7 +33,7 @@ import { playPageTurnSound } from './utils/pageTurnSound';
 
 export default function App() {
   const [portfolio, setPortfolio] = useState<PortfolioData>(() => loadPortfolio());
-  const [activePage, setActivePage] = useState<number>(0); // 0: Cover, 1: TOC, 2..21: Units 1..20, 22: Epilogue
+  const [activePage, setActivePage] = useState<number>(0); // 0: front cover, 1: intro, 2: TOC, 3..22: units, 23: ending
   const [isTocOpen, setIsTocOpen] = useState<boolean>(false);
   const [isGoogleSheetsOpen, setIsGoogleSheetsOpen] = useState<boolean>(false);
   const [printMode, setPrintMode] = useState<'all' | 'single' | null>(null);
@@ -104,7 +105,7 @@ export default function App() {
   };
 
   const handleNavigate = (page: number) => {
-    const nextPage = Math.max(0, Math.min(22, page));
+    const nextPage = Math.max(0, Math.min(23, page));
     if (nextPage === activePage) return;
     setPageDirection(nextPage > activePage ? 1 : -1);
     if (isPageSoundOn) playPageTurnSound();
@@ -176,7 +177,7 @@ export default function App() {
 
   // Print view mode
   if (printMode) {
-    const activeUnitId = activePage >= 2 && activePage <= 21 ? activePage - 1 : undefined;
+    const activeUnitId = activePage >= 3 && activePage <= 22 ? activePage - 2 : undefined;
     return (
       <PrintPortfolioView
         portfolio={portfolio}
@@ -194,28 +195,30 @@ export default function App() {
         <BookCover
           student={portfolio.student}
           onUpdateStudent={handleUpdateStudent}
-          onOpenBook={() => handleNavigate(2)}
-          onViewToc={() => handleNavigate(1)}
+          onOpenBook={() => handleNavigate(spreadSide === 'left' ? 1 : 3)}
+          onViewToc={() => handleNavigate(2)}
           onNewStudent={handleNewStudent}
           onOpenGoogleSheets={() => setIsGoogleSheetsOpen(true)}
           completedCount={completedCount}
+          spreadSide={spreadSide}
         />
       );
     }
 
-    if (page === 1) {
+    if (page === 2) {
       return (
         <TableOfContents
           portfolio={portfolio}
-          onNavigateToUnit={(unitId) => handleNavigate(unitId + 1)}
+          onNavigateToUnit={(unitId) => handleNavigate(unitId + 2)}
           onNavigateToCover={() => handleNavigate(0)}
-          onNavigateToEpilogue={() => handleNavigate(22)}
+          onNavigateToEpilogue={() => handleNavigate(23)}
+          spreadSide={spreadSide}
         />
       );
     }
 
-    if (page >= 2 && page <= 21) {
-      const unit = UNITS_DATA[page - 2];
+    if (page >= 3 && page <= 22) {
+      const unit = UNITS_DATA[page - 3];
       const log = portfolio.units[unit.id];
       if (!log) return null;
       return (
@@ -225,8 +228,8 @@ export default function App() {
           log={log}
           student={portfolio.student}
           onUpdateLog={(updated) => handleUpdateLog(unit.id, updated)}
-          onPrevUnit={() => handleNavigate(Math.max(1, page - 1))}
-          onNextUnit={() => handleNavigate(Math.min(22, page + 1))}
+          onPrevUnit={() => handleNavigate(Math.max(2, page - 1))}
+          onNextUnit={() => handleNavigate(Math.min(23, page + 1))}
           onPrintThisPage={() => {
             setActivePage(page);
             setPrintMode('single');
@@ -254,8 +257,8 @@ export default function App() {
     );
   };
 
-  const isUnitSpread = activePage >= 2 && activePage <= 21;
-  const isCoverSpread = activePage === 0;
+  const isUnitSpread = activePage >= 3 && activePage <= 22;
+  const isTwoPageSpread = activePage >= 1;
 
   return (
     <div className="min-h-screen bg-stone-200/90 text-stone-900 flex flex-col selection:bg-amber-100 selection:text-amber-900 pb-20">
@@ -263,7 +266,7 @@ export default function App() {
       {/* Top Bar Header */}
       <BookNavbar
         activePage={activePage}
-        totalPages={23}
+        totalPages={24}
         student={portfolio.student}
         completedCount={completedCount}
         onNavigate={handleNavigate}
@@ -278,14 +281,14 @@ export default function App() {
 
       {/* Desktop opens as a true two-page spread; mobile keeps one readable leaf. */}
       <main className="flex-1 book-stage px-0 lg:px-4 py-0 lg:py-7">
-        <div className={`open-book ${isUnitSpread ? 'unit-spread' : isCoverSpread ? 'cover-spread' : 'is-single'}`}>
-          {isUnitSpread && (
-            <section className="book-face book-face-left is-active-page" aria-label={`${UNITS_DATA[activePage - 2].code}단원 첫 번째 페이지`}>
-              {renderBookPage(activePage, 'left')}
+        <div className={`open-book ${isUnitSpread ? 'unit-spread' : activePage === 0 ? 'closed-cover is-single' : 'cover-spread'}`}>
+          {isTwoPageSpread && (
+            <section className="book-face book-face-left is-active-page" aria-label={isUnitSpread ? `${UNITS_DATA[activePage - 3].code}단원 첫 번째 페이지` : activePage === 1 ? '책을 펼친 왼쪽 여백' : activePage === 2 ? '목차 01–10단원' : '포트폴리오 총평'}>
+              {activePage === 1 ? <div className="blank-book-page"><span>부산관광고등학교 MICE외식조리과</span></div> : renderBookPage(activePage, 'left')}
             </section>
           )}
-          <section className={`book-face ${isUnitSpread ? 'book-face-right' : isCoverSpread ? 'book-face-cover' : 'book-face-single'} is-active-page`} aria-label={isUnitSpread ? `${UNITS_DATA[activePage - 2].code}단원 두 번째 페이지` : `${activePage}쪽`}>
-              {renderBookPage(activePage, isUnitSpread ? 'right' : 'full')}
+          <section className={`book-face ${isTwoPageSpread ? 'book-face-right' : 'book-face-single'} is-active-page`} aria-label={isUnitSpread ? `${UNITS_DATA[activePage - 3].code}단원 두 번째 페이지` : activePage === 0 ? '책 앞표지' : activePage === 1 ? 'B-디저트 실무 포트폴리오 인적사항' : activePage === 2 ? '목차 11–20단원' : '책 뒷표지'}>
+              {activePage === 23 ? <BackCover student={portfolio.student} completedCount={completedCount} /> : renderBookPage(activePage === 1 ? 0 : activePage, isTwoPageSpread ? 'right' : 'left')}
             </section>
 
           <AnimatePresence custom={pageDirection} initial={false}>
@@ -313,7 +316,7 @@ export default function App() {
       {/* Bottom Floating Page Navigator */}
       <PageNavigation
         activePage={activePage}
-        totalPages={23}
+        totalPages={24}
         onNavigate={handleNavigate}
         onToggleBookmark={handleToggleBookmark}
         isBookmarked={isBookmarked}
