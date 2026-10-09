@@ -1,0 +1,6 @@
+{
+  "name": "B-디저트 실무 스마트 실습 포트폴리오",
+  "description": "부산관광고 MICE외식조리과 B-디저트 실무 20단원 스마트 실습일지 및 개인 전자책 플립북 포트폴리오",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
