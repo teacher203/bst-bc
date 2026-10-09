@@ -222,6 +222,7 @@ export const UnitPage: React.FC<UnitPageProps> = ({
               <button type="button" onClick={onPrintThisPage} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-white text-stone-700 border border-stone-300 hover:bg-stone-100 transition-colors"><Printer className="w-3.5 h-3.5" /><span>단원 A4 인쇄</span></button>
             </div>
           )}
+          {showLeftPage && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-3 min-w-0">
               <span
@@ -239,59 +240,8 @@ export const UnitPage: React.FC<UnitPageProps> = ({
                 </h1>
               </div>
             </div>
-
-            {/* Quick actions live only at the very top of the right-hand page. */}
-            {false && <div className="flex items-center gap-2 flex-wrap shrink-0">
-              <button
-                type="button"
-                onClick={handleDirectSheetSend}
-                disabled={isSyncingSheet}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-xs"
-                title="이 단원의 실습기록을 구글 시트로 실시간 전송"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
-                <span>
-                  {sheetSyncSuccess
-                    ? '시트 전송 완료!'
-                    : isSyncingSheet
-                    ? '전송 중…'
-                    : '구글 시트 전송'}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleToggleComplete}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-xs ${
-                  log.isCompleted
-                    ? 'bg-teal-700 text-white hover:bg-teal-800'
-                    : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-300'
-                }`}
-              >
-                {log.isCompleted ? (
-                  <>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-teal-200" />
-                    <span>실습 완료 도장</span>
-                  </>
-                ) : (
-                  <>
-                    <Circle className="w-3.5 h-3.5 text-stone-400" />
-                    <span>완료 체크</span>
-                  </>
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={onPrintThisPage}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-white text-stone-700 border border-stone-300 hover:bg-stone-100 transition-colors"
-                title="이 단원 단일 A4 보고서 인쇄"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                <span>단원 A4 인쇄</span>
-              </button>
-            </div>}
           </div>
+          )}
 
           {/* Student info and learning goal belong to the first page of the spread. */}
           {showLeftPage && (
