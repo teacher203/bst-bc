@@ -7,8 +7,6 @@ export default defineConfig(() => {
   return {
   base: process.env.GITHUB_PAGES === 'true' ? '/bst-bc/' : '/',
   plugins: [react(), tailwindcss()],
-
-    plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('.', import.meta.url)),
