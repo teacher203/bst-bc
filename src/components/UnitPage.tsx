@@ -710,7 +710,11 @@ export const UnitPage: React.FC<UnitPageProps> = ({
             </div>
           </section>
 
+          </>
+          )}
+
           {/* Section 3: 학생 자기평가 */}
+          {((showLeftPage && unit.id <= 13) || (showRightPage && unit.id >= 14)) && (
           <section className="space-y-3">
             <h2 className="font-serif-kr text-base sm:text-lg font-bold text-stone-900">
               ③ 학생 자기평가 &amp; 성찰 기록
@@ -800,8 +804,11 @@ export const UnitPage: React.FC<UnitPageProps> = ({
               </div>
             </div>
           </section>
+          )}
 
           {/* Section 4: 교과서 기반 스마트 실습코치 */}
+          {showRightPage && (
+          <>
           <section className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-stone-50 to-amber-50/40 border border-stone-300 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-200">
               <div className="flex items-center gap-2.5">

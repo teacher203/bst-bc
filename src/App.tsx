@@ -255,6 +255,7 @@ export default function App() {
   };
 
   const isUnitSpread = activePage >= 2 && activePage <= 21;
+  const isCoverSpread = activePage === 0;
 
   return (
     <div className="min-h-screen bg-stone-200/90 text-stone-900 flex flex-col selection:bg-amber-100 selection:text-amber-900 pb-20">
@@ -277,13 +278,13 @@ export default function App() {
 
       {/* Desktop opens as a true two-page spread; mobile keeps one readable leaf. */}
       <main className="flex-1 book-stage px-0 lg:px-4 py-0 lg:py-7">
-        <div className={`open-book ${isUnitSpread ? 'unit-spread' : 'is-single'}`}>
+        <div className={`open-book ${isUnitSpread ? 'unit-spread' : isCoverSpread ? 'cover-spread' : 'is-single'}`}>
           {isUnitSpread && (
             <section className="book-face book-face-left is-active-page" aria-label={`${UNITS_DATA[activePage - 2].code}단원 첫 번째 페이지`}>
               {renderBookPage(activePage, 'left')}
             </section>
           )}
-          <section className={`book-face ${isUnitSpread ? 'book-face-right' : 'book-face-single'} is-active-page`} aria-label={isUnitSpread ? `${UNITS_DATA[activePage - 2].code}단원 두 번째 페이지` : `${activePage}쪽`}>
+          <section className={`book-face ${isUnitSpread ? 'book-face-right' : isCoverSpread ? 'book-face-cover' : 'book-face-single'} is-active-page`} aria-label={isUnitSpread ? `${UNITS_DATA[activePage - 2].code}단원 두 번째 페이지` : `${activePage}쪽`}>
               {renderBookPage(activePage, isUnitSpread ? 'right' : 'full')}
             </section>
 

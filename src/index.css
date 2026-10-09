@@ -52,8 +52,10 @@
 }
 
 .open-book.is-single { display: block; width: min(1100px, 96vw); }
+.open-book.cover-spread { width: min(1320px, 96vw); }
 .book-face { min-width: 0; background: #fffefb; overflow: hidden; position: relative; }
 .book-face-single { border-radius: 9px 9px 12px 12px; }
+.book-face-cover { grid-column: 1 / -1; border-radius: 9px 9px 12px 12px; }
 .book-face-left { border-radius: 9px 0 0 12px; box-shadow: inset -28px 0 34px -34px rgba(40, 29, 17, 0.75); }
 .book-face-right { border-radius: 0 9px 12px 0; box-shadow: inset 28px 0 34px -34px rgba(40, 29, 17, 0.75); }
 .book-face > * { min-height: 100%; }
@@ -86,10 +88,12 @@
 @media (min-width: 1024px) {
   .book-face .max-w-6xl, .book-face .max-w-5xl, .book-face .max-w-4xl { max-width: 100%; }
   .book-face { font-size: 0.92rem; }
+  .unit-spread .book-face-left .space-y-8,
+  .unit-spread .book-face-right .space-y-8 { gap: 1.35rem; }
 }
 
 @media (max-width: 1023px) {
-  .open-book, .open-book.is-single { display: block; width: 100%; border: 0; border-radius: 0; box-shadow: none; margin-bottom: 5rem; }
+  .open-book, .open-book.is-single, .open-book.cover-spread { display: block; width: 100%; border: 0; border-radius: 0; box-shadow: none; margin-bottom: 5rem; }
   .book-face { display: none; border-radius: 0; box-shadow: none; }
   .book-face.is-active-page { display: block; }
   .book-gutter { display: none; }
