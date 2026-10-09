@@ -297,10 +297,11 @@ export default function App() {
               initial={{ rotateY: 0, filter: 'brightness(1)' }}
               animate={{
                 rotateY: pageDirection > 0 ? -180 : 180,
+                opacity: [1, 1, 0],
                 filter: ['brightness(1)', 'brightness(0.7)', 'brightness(1)'],
               }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 1.05, ease: [0.3, 0.02, 0.18, 1] }}
+              transition={{ duration: 1.05, times: [0, 0.88, 1], ease: [0.3, 0.02, 0.18, 1] }}
               aria-hidden="true"
             >
               <span className="turning-leaf-paper" />
