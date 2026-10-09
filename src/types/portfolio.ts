@@ -71,6 +71,7 @@ export interface UnitLog {
   coachScore?: number;
   coachMetrics?: {
     process: number;
+    outcome?: number;
     cause: number;
     reflection: number;
   };

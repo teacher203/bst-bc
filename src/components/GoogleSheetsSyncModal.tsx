@@ -37,9 +37,9 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
       sheet.appendRow([
         "전송시각", "학번", "학생이름", "소속", "단원코드", "제품명", 
         "실습일자", "제조공정기록", "공정측정기록", "만족도(5점)", 
-        "오늘의잘한점", "반성할점", "보완할점", "코칭등급", "코칭점수", "다음실습미션"
+        "오늘의잘한점", "반성할점", "보완할점", "코칭등급", "코칭점수", "다음실습미션", "단원내순위", "제출자수"
       ]);
-      sheet.getRange(1, 1, 1, 16).setBackground("#fef3c7").setFontWeight("bold");
+      sheet.getRange(1, 1, 1, 18).setBackground("#fef3c7").setFontWeight("bold");
     }
     
     // 학생 실습일지 데이터 1행 추가
@@ -59,10 +59,45 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
       data.improvement || "",
       data.coachGrade || "-",
       data.coachScore || 0,
-      data.mission || ""
+      data.mission || "",
+      "",
+      ""
     ]);
+
+    // 교육청 지침: 전체 제출자의 4%를 계산하고 소수점은 올림한다.
+    // 예: 20명 × 4% = 0.8명 → A등급 1명
+    var lastRow = sheet.getLastRow();
+    var rows = sheet.getRange(2, 1, lastRow - 1, 18).getValues();
+    var sameUnit = [];
+    rows.forEach(function(row, index) {
+      if (String(row[4]) === String(data.unitCode)) {
+        sameUnit.push({ sheetRow: index + 2, score: Number(row[14]) || 0 });
+      }
+    });
+    sameUnit.sort(function(a, b) { return b.score - a.score || a.sheetRow - b.sheetRow; });
+    var total = sameUnit.length;
+    var topCount = Math.ceil(total * 0.04);
+    var submittedRow = lastRow;
+    var submittedRank = 0;
+    var submittedGrade = data.coachGrade || "E";
+
+    sameUnit.forEach(function(item, index) {
+      var rank = index + 1;
+      var currentBase = String(sheet.getRange(item.sheetRow, 14).getValue() || "E");
+      var nonAGrade = currentBase === "A" ? "B" : currentBase;
+      var finalGrade = topCount > 0 && rank <= topCount ? "A" : nonAGrade;
+      sheet.getRange(item.sheetRow, 14).setValue(finalGrade);
+      sheet.getRange(item.sheetRow, 17).setValue(rank);
+      sheet.getRange(item.sheetRow, 18).setValue(total);
+      if (item.sheetRow === submittedRow) {
+        submittedRank = rank;
+        submittedGrade = finalGrade;
+      }
+    });
     
-    return ContentService.createTextOutput(JSON.stringify({status: "success"}))
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "success", grade: submittedGrade, rank: submittedRank, total: total
+    }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({status: "error", message: err.toString()}))
@@ -150,7 +185,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
         strength: targetLog?.strength || '',
         reflection: targetLog?.reflection || '',
         improvement: targetLog?.improvement || '',
-        coachGrade: targetLog?.coachGrade || 'A',
+        coachGrade: targetLog?.coachGrade || 'E',
         coachScore: targetLog?.coachScore || 90,
         mission: targetLog?.coachFeedback?.mission || '',
       };

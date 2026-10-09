@@ -169,19 +169,21 @@ export const UnitPage: React.FC<UnitPageProps> = ({
         strength: log.strength || '',
         reflection: log.reflection || '',
         improvement: log.improvement || '',
-        coachGrade: log.coachGrade || 'A',
-        coachScore: log.coachScore || 90,
+        coachGrade: log.coachGrade || 'E',
+        coachScore: log.coachScore || 0,
         mission: log.coachFeedback?.mission || '',
       };
 
-      await fetch(googleSheetsWebhookUrl, {
+      const response = await fetch(googleSheetsWebhookUrl, {
         method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(payload),
       });
 
+      const ranking = await response.json().catch(() => null);
+
       onUpdateLog({
+        ...(ranking?.grade ? { coachGrade: ranking.grade } : {}),
         syncedToGoogleSheets: true,
         syncedAt: new Date().toISOString(),
       });
@@ -817,12 +819,23 @@ export const UnitPage: React.FC<UnitPageProps> = ({
                     <span className="text-xs text-stone-500 font-mono">
                       총점 {log.coachScore}점 / 100
                     </span>
+                    <p className="mt-1 text-[10px] leading-relaxed text-stone-500">
+                      B~E는 개인 임시등급이며, A는 동일 단원 전체 제출자의 4%(소수점 올림)만 확정됩니다. 20명 기준 1명입니다.
+                    </p>
                   </div>
 
                   <div className="sm:col-span-9 space-y-2 text-xs">
                     <div className="flex items-center justify-between text-stone-600">
-                      <span>공정 정밀 기록 (50%)</span>
+                      <span>공정 정밀 기록 (35%)</span>
                       <span className="font-mono font-bold text-stone-800">{log.coachMetrics?.process || 0}점</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-stone-600">
+                      <span>완제품 결과·성공/실패 근거 (35%)</span>
+                      <span className="font-mono font-bold text-stone-800">{log.coachMetrics?.outcome || 0}점</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-rose-600 rounded-full" style={{ width: `${log.coachMetrics?.outcome || 0}%` }} />
                     </div>
                     <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
                       <div
@@ -832,7 +845,7 @@ export const UnitPage: React.FC<UnitPageProps> = ({
                     </div>
 
                     <div className="flex items-center justify-between text-stone-600">
-                      <span>원인 추론 분석 (25%)</span>
+                      <span>원인 추론 분석 (20%)</span>
                       <span className="font-mono font-bold text-stone-800">{log.coachMetrics?.cause || 0}점</span>
                     </div>
                     <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
@@ -843,7 +856,7 @@ export const UnitPage: React.FC<UnitPageProps> = ({
                     </div>
 
                     <div className="flex items-center justify-between text-stone-600">
-                      <span>자기 성찰 깊이 (25%)</span>
+                      <span>자기 성찰·다음 행동 (10%)</span>
                       <span className="font-mono font-bold text-stone-800">{log.coachMetrics?.reflection || 0}점</span>
                     </div>
                     <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
@@ -907,6 +920,15 @@ export const UnitPage: React.FC<UnitPageProps> = ({
             )}
           </section>
 
+          <section className="p-5 sm:p-6 rounded-2xl bg-sky-50 border border-sky-200 space-y-3 print-avoid-break">
+            <h3 className="font-serif-kr text-base font-bold text-stone-900">④ 저장 · A4 내려받기 · Google Classroom 제출</h3>
+            <ol className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-stone-700">
+              <li className="p-3 bg-white rounded-xl border border-sky-100"><b className="block text-sky-800 mb-1">1. 기록 저장</b>입력 내용은 이 기기에 자동 저장됩니다. 스마트 코칭 결과까지 확인하세요.</li>
+              <li className="p-3 bg-white rounded-xl border border-sky-100"><b className="block text-sky-800 mb-1">2. A4 내려받기</b>상단의 [단원 A4 인쇄]를 눌러 인쇄 창에서 [PDF로 저장]을 선택하세요.</li>
+              <li className="p-3 bg-white rounded-xl border border-sky-100"><b className="block text-sky-800 mb-1">3. Classroom 제출</b>Google Classroom 과제에서 [추가 또는 만들기] → [파일] → 저장한 PDF 선택 → [제출]을 누르세요.</li>
+            </ol>
+          </section>
+
         </div>
 
         {/* Bottom Page Navigation within Unit */}
@@ -946,6 +968,9 @@ export const UnitPage: React.FC<UnitPageProps> = ({
         </div>
 
       </article>
+      <footer className="py-5 text-center text-[11px] text-stone-500">
+        부산관광고등학교 MICE외식조리과 배포
+      </footer>
     </div>
   );
 };

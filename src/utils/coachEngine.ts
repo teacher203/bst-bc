@@ -5,6 +5,7 @@ export interface CoachEvaluationResult {
   score: number;
   metrics: {
     process: number;
+    outcome: number;
     cause: number;
     reflection: number;
   };
@@ -25,36 +26,53 @@ export function evaluateStudentLog(
   const filledFields = fields.filter((f) => (dynamicData[f.key] || '').trim().length > 0);
   const procedureLength = (procedureNotes || '').trim().length;
   
-  // 1. Process recording score (50%) - incorporates student procedure notes (especially for units 1~13)
+  // 1. 공정 기록(35%): 단순 입력 여부보다 수치·조건의 구체성을 반영
   const baseProcessScore = (filledFields.length / Math.max(1, fields.length)) * 100;
-  // If student wrote their own procedure notes, bonus points up to 100
-  const procedureScore = Math.min(100, procedureLength > 15 ? 100 : (procedureLength / 15) * 80);
-  const processScore = Math.round(baseProcessScore * 0.7 + procedureScore * 0.3);
+  const procedureScore = Math.min(100, (procedureLength / 80) * 100);
+  const numericEvidence = filledFields.filter((f) => /\d/.test(dynamicData[f.key] || '')).length;
+  const numericScore = Math.min(100, (numericEvidence / Math.max(2, Math.ceil(fields.length / 2))) * 100);
+  const processScore = Math.round(baseProcessScore * 0.45 + procedureScore * 0.30 + numericScore * 0.25);
 
-  // 2. Cause deduction score (25%)
-  const causeScore = Math.min(100, (reflection.trim().length * 3) + (improvement.trim().length * 2));
+  // 2. 완제품 결과(35%): 마지막 품질 항목에 관찰 근거와 성공·실패 상태가 있어야 고득점
+  const qualityField = fields[fields.length - 1];
+  const qualityText = (dynamicData[qualityField?.key] || '').trim();
+  const resultWords = /(성공|적정|균일|바삭|촉촉|부드|팽창|선명|안정|실패|부족|과다|갈라|꺼짐|분리|눅눅|질김|불균일|개선)/;
+  const qualityLengthScore = Math.min(70, (qualityText.length / 60) * 70);
+  const qualityEvidenceScore = /\d/.test(qualityText) ? 15 : 0;
+  const qualityJudgementScore = resultWords.test(qualityText) ? 15 : 0;
+  const outcomeScore = Math.round(qualityLengthScore + qualityEvidenceScore + qualityJudgementScore);
 
-  // 3. Self-reflection score (25%)
+  // 3. 원인 추론(20%): 결과-원인-변수의 연결을 평가
+  const causalWords = /(때문|원인|영향|결과|따라서|그래서|온도|시간|수분|중량|압력|농도|속도)/;
+  const causeScore = Math.min(100, Math.round(
+    (reflection.trim().length / 70) * 65 +
+    (causalWords.test(reflection) ? 20 : 0) +
+    (/\d/.test(reflection) ? 15 : 0)
+  ));
+
+  // 4. 자기 성찰(10%): 구체적인 다음 행동 중심
   const reflectionScore = Math.min(
     100,
-    (strength.trim().length * 2) +
-    reflection.trim().length +
-    improvement.trim().length +
-    (satisfaction * 6)
+    Math.round((strength.trim().length / 50) * 30) +
+    Math.round((improvement.trim().length / 60) * 45) +
+    (/\d|다음|측정|조절|확인|비교/.test(improvement) ? 20 : 0) +
+    satisfaction
   );
 
-  // Overall total score
-  const totalScore = Math.min(100, Math.round(processScore * 0.5 + causeScore * 0.25 + reflectionScore * 0.25));
+  const totalScore = Math.min(100, Math.round(
+    processScore * 0.35 + outcomeScore * 0.35 + causeScore * 0.20 + reflectionScore * 0.10
+  ));
 
+  // A등급은 구글 시트에 누적된 동일 단원 제출자의 4%(소수점 올림)만 확정한다.
+  // 개인 기기에서는 비교 집단이 없으므로 최고 등급을 B(임시)로 제한한다.
   let grade: 'A' | 'B' | 'C' | 'D' | 'E' = 'E';
-  if (totalScore >= 90) grade = 'A';
-  else if (totalScore >= 80) grade = 'B';
+  if (totalScore >= 85) grade = 'B';
   else if (totalScore >= 70) grade = 'C';
-  else if (totalScore >= 60) grade = 'D';
+  else if (totalScore >= 55) grade = 'D';
 
   const gradeMessages: Record<string, string> = {
-    A: '핵심 제조 공정과 실험 결과를 정밀하게 기록하고, 원인과 다음 행동을 훌륭하게 연결했습니다. 파티시에 수준의 완성도입니다.',
-    B: '주요 제조 공정 기록과 성찰이 잘 연결되었습니다. 빠진 수치나 온도 조건을 한 가지만 더 보완하면 A등급에 도달합니다.',
+    A: '동일 단원 제출자 가운데 상위 4%로 확인되어 A등급이 확정되었습니다.',
+    B: '공정·완제품 결과·원인·다음 행동이 충실합니다. A등급은 구글 시트 제출자 전체와 비교한 상위 4%에게만 확정됩니다.',
     C: '기본 기록은 갖추었습니다. 단순히 느낌만 적기보다 실패나 성공의 화학적/물리적 원인을 구체적인 문장으로 연결해 보세요.',
     D: '일부 기록이 부족합니다. 배합비, 굽기 조건 등 빠진 공정 수치와 반성·보완 내용을 보강해 주세요.',
     E: '코칭에 필요한 기록이 많이 비어 있습니다. 단원별 제조 공정과 핵심 항목, 자기평가를 직접 꼼꼼히 작성해 보세요.',
@@ -126,6 +144,7 @@ export function evaluateStudentLog(
     score: totalScore,
     metrics: {
       process: processScore,
+      outcome: outcomeScore,
       cause: causeScore,
       reflection: reflectionScore,
     },

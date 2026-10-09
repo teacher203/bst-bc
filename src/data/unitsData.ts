@@ -223,7 +223,7 @@ export const UNITS_DATA: UnitDefinition[] = [
     fields: [
       { key: 'formula', label: '슈·크렘 파티시에르 배합', type: 'textarea', placeholder: '물·우유·버터·박력분·달걀·커스터드 재료량', fullWidth: true },
       { key: 'panade', label: '호화 반죽(파나드) 상태', type: 'text', placeholder: '예: 바닥 얇은 막 형성 및 75~80℃ 도달' },
-      { key: 'eggAmount', label: '실제 달걀 투입량(g)', type: 'number', placeholder: '예: 180', unitSuffix: 'g' },
+      { key: 'eggAmount', label: '실제 달걀 투입량', type: 'number', placeholder: '예: 180', unitSuffix: 'g' },
       { key: 'piping', label: '팬닝 길이·중량', type: 'text', placeholder: '예: 12cm / 28g' },
       { key: 'bakeCondition', label: '단계별 굽기조건', type: 'text', placeholder: '예: 200℃ 15분 → 170℃ 20분' },
       { key: 'quality', label: '팽창·내부 공동·크림 농도', type: 'textarea', placeholder: '슈 껍질의 바삭함과 크림의 찰기, 단면 충전률을 기록하세요.', fullWidth: true },
