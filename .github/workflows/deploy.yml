@@ -1,4 +1,3 @@
-
 name: Deploy B-Dessert to GitHub Pages
 
 on:
@@ -21,34 +20,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-
+          cache: npm
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
-
+        run: npm ci --no-audit --no-fund
       - name: Build
         run: npm run build
         env:
           GITHUB_PAGES: 'true'
-
       - name: Setup Pages
         uses: actions/configure-pages@v5
-
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
-
   deploy:
-    environment:
-      name: github-pages
-      url: $&#123;&#123; steps.deployment.outputs.page_url &#125;&#125;
     runs-on: ubuntu-latest
     needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy
         id: deployment
