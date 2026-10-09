@@ -35,6 +35,55 @@
   pointer-events: none;
 }
 
+/* A single book stage wraps every page, including cover, TOC and epilogue. */
+.book-stage {
+  perspective: 1900px;
+  perspective-origin: 50% 38%;
+}
+
+.book-turn-page {
+  position: relative;
+  min-height: 100%;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity, filter;
+}
+
+.page-turn-sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 34%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(52, 42, 31, 0.18) 66%,
+    transparent 100%
+  );
+  animation: page-sheen 620ms cubic-bezier(0.22, 0.72, 0.18, 1);
+}
+
+@keyframes page-sheen {
+  0% { opacity: 0; transform: translateX(38%); }
+  42% { opacity: 0.72; }
+  100% { opacity: 0; transform: translateX(-38%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book-turn-page {
+    transform: none !important;
+    filter: none !important;
+    transition-duration: 1ms !important;
+  }
+
+  .page-turn-sheen {
+    display: none;
+  }
+}
+
 /* Print styling for PDF generation */
 @media print {
   @page {

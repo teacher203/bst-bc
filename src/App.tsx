@@ -28,6 +28,7 @@ import {
   createInitialPortfolio,
 } from './utils/portfolioStorage';
 import { downloadProjectZip } from './utils/projectZipExporter';
+import { playPageTurnSound } from './utils/pageTurnSound';
 
 export default function App() {
   const [portfolio, setPortfolio] = useState<PortfolioData>(() => loadPortfolio());
@@ -36,6 +37,10 @@ export default function App() {
   const [isGoogleSheetsOpen, setIsGoogleSheetsOpen] = useState<boolean>(false);
   const [printMode, setPrintMode] = useState<'all' | 'single' | null>(null);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
+  const [pageDirection, setPageDirection] = useState<1 | -1>(1);
+  const [isPageSoundOn, setIsPageSoundOn] = useState<boolean>(() => {
+    return localStorage.getItem('bst-page-sound') !== 'off';
+  });
 
   // Autosave to localStorage on changes
   useEffect(() => {
@@ -99,8 +104,21 @@ export default function App() {
   };
 
   const handleNavigate = (page: number) => {
-    setActivePage(page);
+    const nextPage = Math.max(0, Math.min(22, page));
+    if (nextPage === activePage) return;
+    setPageDirection(nextPage > activePage ? 1 : -1);
+    if (isPageSoundOn) playPageTurnSound();
+    setActivePage(nextPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleTogglePageSound = () => {
+    setIsPageSoundOn((current) => {
+      const next = !current;
+      localStorage.setItem('bst-page-sound', next ? 'on' : 'off');
+      if (next) playPageTurnSound();
+      return next;
+    });
   };
 
   const handleToggleBookmark = (page: number) => {
@@ -195,16 +213,44 @@ export default function App() {
         saveStatus={saveStatus}
       />
 
-      {/* Main Flapbook Canvas with Smooth Page Flip Transition */}
-      <main className="flex-1">
-        <AnimatePresence mode="wait">
+      {/* Main flipbook canvas: every destination uses the same directional page turn. */}
+      <main className="flex-1 overflow-hidden book-stage">
+        <AnimatePresence mode="wait" custom={pageDirection} initial={false}>
           <motion.div
             key={activePage}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.28, ease: 'easeOut' }}
+            custom={pageDirection}
+            variants={{
+              enter: (direction: number) => ({
+                opacity: 0.25,
+                rotateY: direction > 0 ? -82 : 82,
+                x: direction > 0 ? '12%' : '-12%',
+                scale: 0.985,
+                transformOrigin: direction > 0 ? 'left center' : 'right center',
+                filter: 'brightness(0.72)',
+              }),
+              center: {
+                opacity: 1,
+                rotateY: 0,
+                x: 0,
+                scale: 1,
+                filter: 'brightness(1)',
+              },
+              exit: (direction: number) => ({
+                opacity: 0.15,
+                rotateY: direction > 0 ? 82 : -82,
+                x: direction > 0 ? '-12%' : '12%',
+                scale: 0.985,
+                transformOrigin: direction > 0 ? 'left center' : 'right center',
+                filter: 'brightness(0.68)',
+              }),
+            }}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.62, ease: [0.22, 0.72, 0.18, 1] }}
+            className="book-turn-page"
           >
+            <span className="page-turn-sheen" aria-hidden="true" />
             {activePage === 0 && (
               <BookCover
                 student={portfolio.student}
@@ -266,6 +312,8 @@ export default function App() {
         onNavigate={handleNavigate}
         onToggleBookmark={handleToggleBookmark}
         isBookmarked={isBookmarked}
+        isPageSoundOn={isPageSoundOn}
+        onTogglePageSound={handleTogglePageSound}
       />
 
       {/* Slide-out Quick Table of Contents Drawer */}

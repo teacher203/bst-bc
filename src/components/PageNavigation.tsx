@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { ChevronLeft, ChevronRight, BookOpen, Bookmark } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Bookmark, Volume2, VolumeX } from 'lucide-react';
 import { UNITS_DATA } from '../data/unitsData';
 
 interface PageNavigationProps {
@@ -8,6 +8,8 @@ interface PageNavigationProps {
   onNavigate: (page: number) => void;
   onToggleBookmark: (page: number) => void;
   isBookmarked: boolean;
+  isPageSoundOn: boolean;
+  onTogglePageSound: () => void;
 }
 
 export const PageNavigation: React.FC<PageNavigationProps> = ({
@@ -16,6 +18,8 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
   onNavigate,
   onToggleBookmark,
   isBookmarked,
+  isPageSoundOn,
+  onTogglePageSound,
 }) => {
   // Keyboard arrow navigation
   useEffect(() => {
@@ -91,6 +95,21 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
 
       {/* Next Button */}
       <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={onTogglePageSound}
+          className={`p-1.5 rounded-lg transition-colors ${
+            isPageSoundOn
+              ? 'text-amber-300 bg-amber-400/10 hover:bg-amber-400/20'
+              : 'text-stone-500 hover:text-stone-300 hover:bg-stone-800'
+          }`}
+          title={isPageSoundOn ? '책장 넘김 소리 끄기' : '책장 넘김 소리 켜기'}
+          aria-label={isPageSoundOn ? '책장 넘김 소리 끄기' : '책장 넘김 소리 켜기'}
+          aria-pressed={isPageSoundOn}
+        >
+          {isPageSoundOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+        </button>
+
         <button
           type="button"
           onClick={() => onToggleBookmark(activePage)}
