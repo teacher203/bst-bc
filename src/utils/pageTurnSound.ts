@@ -7,7 +7,9 @@ export const playPageTurnSound = () => {
     pageTurnAudio.preload = 'auto';
     pageTurnAudio.volume = 0.72;
     pageTurnAudio.currentTime = 0;
-    void pageTurnAudio.play();
+    void pageTurnAudio.play().catch(() => {
+      // Browsers may block audio when navigation was not started by a user gesture.
+    });
   } catch {
     // Audio is decorative; page navigation remains available if playback fails.
   }
