@@ -452,7 +452,7 @@ export const UNITS_DATA: UnitDefinition[] = [
       { key: 'formula', label: '시트·크림 배합', type: 'textarea', placeholder: '비스퀴 시트 배합 및 마스카포네 샹티이 크림 배합', fullWidth: true },
       { key: 'colorWeight', label: '색별 반죽 분할량(g)', type: 'text', placeholder: '예: 5색 각 120g 균등 분할' },
       { key: 'bakeCondition', label: '시트 굽기조건', type: 'text', placeholder: '예: 180℃ / 11~12분' },
-      { key: 'rollTemp', label: '말기 시작 시트온도(℃)', type: 'number', placeholder: '예: 32', unitSuffix: '℃' },
+      { key: 'rollTemp', label: '말기 시작 시트온도', type: 'number', placeholder: '예: 32', unitSuffix: '℃' },
       { key: 'crack', label: '시트 표면 상태', type: 'select', options: ['균열 전혀 없음(매끄러움)', '미세 실금', '큰 터짐/갈라짐'] },
       { key: 'quality', label: '색 선명도·나선·기공 관찰', type: 'textarea', placeholder: '색의 경계선 번짐 유무, 크림 쏠림 여부를 기록하세요.', fullWidth: true },
     ],
