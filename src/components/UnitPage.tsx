@@ -969,7 +969,7 @@ export const UnitPage: React.FC<UnitPageProps> = ({
 
       </article>
       <footer className="py-5 text-center text-[11px] text-stone-500">
-        부산관광고등학교 MICE외식조리과 배포
+        부산관광고등학교 MICE외식조리과
       </footer>
     </div>
   );
