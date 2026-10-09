@@ -35,6 +35,7 @@ interface UnitPageProps {
   isFirstUnit: boolean;
   isLastUnit: boolean;
   googleSheetsWebhookUrl?: string;
+  spreadSide?: 'left' | 'right' | 'full';
 }
 
 export const UnitPage: React.FC<UnitPageProps> = ({
@@ -49,6 +50,7 @@ export const UnitPage: React.FC<UnitPageProps> = ({
   isFirstUnit,
   isLastUnit,
   googleSheetsWebhookUrl,
+  spreadSide = 'full',
 }) => {
   const [isCoaching, setIsCoaching] = useState(false);
   const [isSyncingSheet, setIsSyncingSheet] = useState(false);
@@ -199,6 +201,8 @@ export const UnitPage: React.FC<UnitPageProps> = ({
   };
 
   const hasWrittenProcedure = (log.procedureNotes || '').trim().length > 0;
+  const showLeftPage = spreadSide !== 'right';
+  const showRightPage = spreadSide !== 'left';
 
   return (
     <div className="max-w-5xl mx-auto p-4 sm:p-8">
@@ -282,7 +286,9 @@ export const UnitPage: React.FC<UnitPageProps> = ({
             </div>
           </div>
 
-          {/* Student Info Bar on the Page (Clean: ONLY Student Name/No and Date - Teacher removed) */}
+          {/* Student info and learning goal belong to the first page of the spread. */}
+          {showLeftPage && (
+          <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white/90 p-3 rounded-xl border border-stone-200/80 text-xs text-stone-700">
             <div className="flex items-center gap-2">
               <User className="w-3.5 h-3.5 text-amber-600" />
@@ -313,10 +319,22 @@ export const UnitPage: React.FC<UnitPageProps> = ({
               {unit.goal}
             </p>
           </div>
+          </>
+          )}
+
+          {spreadSide === 'right' && (
+            <div className="mt-3 px-3 py-2 bg-white/90 rounded-xl border border-stone-200/80 text-xs text-stone-600">
+              <b className="text-stone-900">실습 기록 · 자기평가 · 스마트 코칭</b>
+              <span className="ml-2">왼쪽 페이지의 제조 공정과 완제품을 바탕으로 기록하세요.</span>
+            </div>
+          )}
         </div>
 
         {/* Page Content Body */}
         <div className="p-6 sm:p-8 space-y-8">
+
+          {showLeftPage && (
+          <>
 
           {/* 🌟 Flapbook Special Liftable Flap Card */}
           <FlapCard
@@ -619,7 +637,12 @@ export const UnitPage: React.FC<UnitPageProps> = ({
             </div>
           </section>
 
+          </>
+          )}
+
           {/* Section 2: 단원별 맞춤 공정 측정 기록 */}
+          {showRightPage && (
+          <>
           <section className="space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="font-serif-kr text-base sm:text-lg font-bold text-stone-900 whitespace-nowrap">
@@ -929,9 +952,13 @@ export const UnitPage: React.FC<UnitPageProps> = ({
             </ol>
           </section>
 
+          </>
+          )}
+
         </div>
 
         {/* Bottom Page Navigation within Unit */}
+        {showRightPage && (
         <div className="p-4 sm:p-6 bg-stone-50 border-t border-stone-200 flex items-center justify-between gap-3 text-xs">
           <button
             type="button"
@@ -966,6 +993,7 @@ export const UnitPage: React.FC<UnitPageProps> = ({
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
+        )}
 
       </article>
       <footer className="py-5 text-center text-[11px] text-stone-500">

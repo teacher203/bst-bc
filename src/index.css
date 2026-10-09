@@ -51,8 +51,9 @@
   transform-style: preserve-3d;
 }
 
-.open-book.is-cover { display: block; width: min(900px, 96vw); }
+.open-book.is-single { display: block; width: min(1100px, 96vw); }
 .book-face { min-width: 0; background: #fffefb; overflow: hidden; position: relative; }
+.book-face-single { border-radius: 9px 9px 12px 12px; }
 .book-face-left { border-radius: 9px 0 0 12px; box-shadow: inset -28px 0 34px -34px rgba(40, 29, 17, 0.75); }
 .book-face-right { border-radius: 0 9px 12px 0; box-shadow: inset 28px 0 34px -34px rgba(40, 29, 17, 0.75); }
 .book-face > * { min-height: 100%; }
@@ -63,7 +64,7 @@
   transform: translateX(-50%); pointer-events: none;
   background: linear-gradient(90deg, transparent, rgba(49, 35, 21, 0.16) 42%, rgba(255,255,255,0.58) 51%, rgba(49,35,21,0.13) 58%, transparent);
 }
-.is-cover .book-gutter { display: none; }
+.is-single .book-gutter { display: none; }
 
 .turning-leaf {
   position: absolute; z-index: 21; top: 0; bottom: 0; width: 50%; pointer-events: none;
@@ -88,7 +89,7 @@
 }
 
 @media (max-width: 1023px) {
-  .open-book, .open-book.is-cover { display: block; width: 100%; border: 0; border-radius: 0; box-shadow: none; margin-bottom: 5rem; }
+  .open-book, .open-book.is-single { display: block; width: 100%; border: 0; border-radius: 0; box-shadow: none; margin-bottom: 5rem; }
   .book-face { display: none; border-radius: 0; box-shadow: none; }
   .book-face.is-active-page { display: block; }
   .book-gutter { display: none; }

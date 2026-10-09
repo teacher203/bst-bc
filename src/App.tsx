@@ -188,7 +188,7 @@ export default function App() {
     );
   }
 
-  const renderBookPage = (page: number) => {
+  const renderBookPage = (page: number, spreadSide: 'left' | 'right' | 'full' = 'full') => {
     if (page === 0) {
       return (
         <BookCover
@@ -235,6 +235,7 @@ export default function App() {
           isFirstUnit={unit.id === 1}
           isLastUnit={unit.id === 20}
           googleSheetsWebhookUrl={portfolio.googleSheetsWebhookUrl}
+          spreadSide={spreadSide}
         />
       );
     }
@@ -253,8 +254,7 @@ export default function App() {
     );
   };
 
-  const leftPage = activePage === 0 ? null : activePage % 2 === 1 ? activePage : activePage - 1;
-  const rightPage = activePage === 0 ? 0 : leftPage !== null && leftPage + 1 <= 22 ? leftPage + 1 : null;
+  const isUnitSpread = activePage >= 2 && activePage <= 21;
 
   return (
     <div className="min-h-screen bg-stone-200/90 text-stone-900 flex flex-col selection:bg-amber-100 selection:text-amber-900 pb-20">
@@ -277,17 +277,15 @@ export default function App() {
 
       {/* Desktop opens as a true two-page spread; mobile keeps one readable leaf. */}
       <main className="flex-1 book-stage px-0 lg:px-4 py-0 lg:py-7">
-        <div className={`open-book ${activePage === 0 ? 'is-cover' : ''}`}>
-          {leftPage !== null && (
-            <section className={`book-face book-face-left ${activePage === leftPage ? 'is-active-page' : ''}`} aria-label={`${leftPage}쪽`}>
-              {renderBookPage(leftPage)}
+        <div className={`open-book ${isUnitSpread ? 'unit-spread' : 'is-single'}`}>
+          {isUnitSpread && (
+            <section className="book-face book-face-left is-active-page" aria-label={`${UNITS_DATA[activePage - 2].code}단원 첫 번째 페이지`}>
+              {renderBookPage(activePage, 'left')}
             </section>
           )}
-          {rightPage !== null && (
-            <section className={`book-face book-face-right ${activePage === rightPage ? 'is-active-page' : ''}`} aria-label={`${rightPage}쪽`}>
-              {renderBookPage(rightPage)}
+          <section className={`book-face ${isUnitSpread ? 'book-face-right' : 'book-face-single'} is-active-page`} aria-label={isUnitSpread ? `${UNITS_DATA[activePage - 2].code}단원 두 번째 페이지` : `${activePage}쪽`}>
+              {renderBookPage(activePage, isUnitSpread ? 'right' : 'full')}
             </section>
-          )}
 
           <AnimatePresence custom={pageDirection} initial={false}>
             <motion.div
