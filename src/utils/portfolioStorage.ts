@@ -87,7 +87,16 @@ export function loadPortfolio(): PortfolioData {
           lastUpdated: new Date().toISOString(),
         };
       }
+
+      // 2026-10 평가정책 변경 이전에 개인 점수만으로 저장된 A등급은
+      // 비교집단 상위 4% 확인을 거치지 않았으므로 B 임시등급으로 전환한다.
+      const existingLog = parsed.units[u.id];
+      if (existingLog?.coachGrade === 'A') {
+        existingLog.coachGrade = 'B';
+      }
     });
+    parsed.version = '3.1.0';
+    savePortfolio(parsed);
     return parsed;
   } catch (e) {
     console.error('Failed to load portfolio from localStorage, resetting:', e);
